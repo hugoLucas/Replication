@@ -51,6 +51,16 @@ class VirtualMachine(Node, object):
         self.freq = freq
         self.pair = None
 
+    def replicate(self):
+        """
+        Returns a copy of this object with the self.phys_parent left to None in order to simulate a replicated
+        Virtual Machine.
+        :return: a VirtualMachine object identical to this object except for the self.phys_parent field.
+        """
+        vm = VirtualMachine(freq=self.freq, name=self.name, vm_size=self.size)
+        vm.assign_pair(self.pair)
+        return vm
+
     def assign_pair(self, vm_pair):
         if type(vm_pair) is VirtualMachine:
             self.pair = vm_pair
@@ -160,6 +170,9 @@ class PhysicalMachine(Node, object):
         """
         return self.current_capacity < self.capacity
 
+    def get_edge_switch(self):
+        return self.edge_switch
+
 
 class PhysicalSwitch(Node, object):
     """
@@ -215,6 +228,8 @@ class VMPair:
         self.frequency = freq
 
     def add_replicated_vm(self, vm):
+        if not self.replicated:
+            self.set_replicated(True)
         self.rep_vm_list.append(vm)
 
     def get_vms(self):

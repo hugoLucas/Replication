@@ -24,30 +24,54 @@ class GreedyAlgorithm:
         Replicates VMs according to the algorithm outlined above
         :return: None
         """
-        vm_pairs = sorted(self.vm_pairs, key=lambda v: v.get_communication_frequency())
+        vm_pairs = sorted(self.vm_pairs, key=lambda v: v.get_communication_frequency(), reverse=True)
         phy_hosts = filter(lambda v: v.has_space(), self.topology.get_hosts())
-
         while len(phy_hosts) > 0:
             pair = vm_pairs.pop(0)
             vm_1, vm_2 = pair.get_vms()
             if vm_1.get_parent() != vm_2.get_parent():
                 host_1, host_2 = vm_1.get_parent(), vm_2.get_parent()
-                comm_cost = self.topology.get_distance(host_1, host_2)
+                comm_cost = self.topology.get_distance(host_1.get_edge_switch(), host_2.get_edge_switch())
 
                 for host in phy_hosts:
-                    cost_1 = self.topology.get_distance(host.get_edge_switch(), host_1)
-                    cost_2 = self.topology.get_distance(host.get_edge_switch(), host_2)
+                    cost_1 = self.topology.get_distance(host.get_edge_switch(), host_1.get_edge_switch())
+                    cost_2 = self.topology.get_distance(host.get_edge_switch(), host_2.get_edge_switch())
                     min_cost = min(cost_1, cost_2)
 
-                    cost_dict = {cost_1: vm_1, cost_2: vm_2}
+                    cost_dict = {cost_1: vm_2, cost_2: vm_1}
                     if min_cost < comm_cost:
                         replicated_vm = cost_dict[min_cost].replicate()
                         if host.can_fit(replicated_vm.get_size()):
                             host.replicate_vm(replicated_vm)
                             replicated_vm.assign_parent(host)
-                            pair.add_replicated(replicated_vm)
+                            pair.add_replicated_vm(replicated_vm)
                         else:
                             phy_hosts.remove(host)
 
     def get_cost(self):
-        pass
+        """
+        Calculates the total communication cost for all the replicated pairs in the topology
+        :return: (int) total communication cost
+        """
+        communication_cost = 0
+        for pair in self.vm_pairs:
+            vm_1, vm_2 = pair.get_vms()
+            comm_frequency = pair.get_communication_frequency()
+
+            if pair.was_replicated():
+                replicated_vm = pair.get_replicated_vms()[0]
+
+                if replicated_vm.get_name() == vm_1.get_name():
+                    hop_cost = self.topology.get_distance(replicated_vm.get_parent().get_edge_switch(),
+                                                          vm_2.get_parent().get_edge_switch()) + 2
+                else:
+                    hop_cost = self.topology.get_distance(vm_1.get_parent().get_edge_switch(),
+                                                          replicated_vm.get_parent().get_edge_switch()) + 2
+
+                communication_cost += (hop_cost * comm_frequency)
+            else:
+                hop_cost = self.topology.get_distance(vm_1.get_parent().get_edge_switch(),
+                                                      vm_2.get_parent().get_edge_switch()) + 2
+                communication_cost += (hop_cost * comm_frequency)
+
+        return communication_cost

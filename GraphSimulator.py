@@ -12,10 +12,26 @@ class GraphSimulator:
         self.topo = topology
         self.n_vm_pairs = num_vm_pairs
 
-        self.vm_freq_range = 1
-        self.vm_comm_range = 1000
+        self.vm_freq_range = 1000
 
         self.allocated_vm_pairs = []
+        self.base_communication_cost = 0
+
+    def pass_algorithm(self, algorithm_class):
+        """
+        Given an object representing a replication algorithm, this method will return the communication
+        prepare the simulation to use this algorithm on the source topology.
+        :param algorithm_class:
+        :return:
+        """
+        algorithm = algorithm_class(self.topo, self.allocated_vm_pairs)
+        algorithm.allocate()
+        algorithm_cost = algorithm.get_cost() * 1.0
+        reduction = (algorithm_cost - self.base_communication_cost)/self.base_communication_cost
+
+        print "Base Cost: {}".format(self.base_communication_cost)
+        print "New Cost: {}".format(algorithm_cost)
+        print "Reduction: {}".format(reduction)
 
     def set_up_data_center(self):
         """
@@ -57,6 +73,9 @@ class GraphSimulator:
             host_2 = self.get_random_host(free_indices, physical_hosts, vm_2.get_size())
             host_2.add_vm(vm_2)
             vm_2.assign_parent(host_2)
+
+            hops = self.topo.get_distance(host_1.get_edge_switch(), host_2.get_edge_switch()) + 2
+            self.base_communication_cost += (hops * pair.get_communication_frequency())
 
     def revert_state(self):
         """

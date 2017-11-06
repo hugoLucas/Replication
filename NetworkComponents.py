@@ -241,6 +241,12 @@ class VMPair:
     def set_replicated(self, bool_val):
         self.replicated = bool_val
 
+    def get_replicated_vms(self):
+        return self.rep_vm_list
+
     def reset_pair(self):
         self.replicated = False
         self.rep_vm_list = []
+
+    def was_replicated(self):
+        return self.replicated

@@ -18,18 +18,18 @@ class GraphSimulator:
         self.allocated_vm_pairs = []
         self.replicated_vm_pairs = []
 
-    """
-    Builds a set of random virtual machine pairs and allocates them in the data center 
-    topology in order to simulate a pre-existing data center. 
-    """
     def set_up_data_center(self):
+        """
+        Builds a set of random virtual machine pairs and allocates them in the data center
+        topology in order to simulate a pre-existing data center.
+        """
         self.create_virtual_machines()
         self.allocate_virtual_machines()
 
-    """
-    Creates a set of virtual machine pairs to allocate inside of a graph topology 
-    """
     def create_virtual_machines(self):
+        """
+        Creates a set of virtual machine pairs to allocate inside of a graph topology
+        """
         for i in range(1, self.n_vm_pairs + 1, 1):
             frequency = random.randint(1, self.vm_freq_range)
             vm_1 = net.VirtualMachine(frequency, "vm_" + str((2 * i) - 1), 1)
@@ -59,14 +59,24 @@ class GraphSimulator:
             host_2.add_vm(vm_2)
             vm_2.assign_parent(host_2)
 
-    """
-    Reverts the state of the simulation back to its creation state
-    """
     def revert_state(self):
+        """
+        Reverts the simulation topology to its pre-algorithm application state
+        :return:
+        """
         return
 
     @staticmethod
     def get_random_host(free_indices, hosts, vm_size):
+        """
+        Returns a random host in order to allow the random distribution of virtual machines in the beginning
+        of a new simulation.
+
+        :param free_indices:    a list of indices belonging to VMs in hosts list that have non-zero capacity
+        :param hosts:           a list of PhysicalHosts that have non-zero capacity
+        :param vm_size:         an integer representing the size of the VM to be added to the returned host
+        :return:
+        """
         index = random.randint(0, len(free_indices) - 1)
         host = hosts[free_indices[index]]
 

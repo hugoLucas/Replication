@@ -124,11 +124,36 @@ class PhysicalSwitch(Node, object):
         Represents a switch in a topology
     """
 
-    """ Number of packets that have been processed by this switch """
-    packets_processed = 0
-
     def __init__(self, name=None):
+        """
+        Relies on PhysicalSwitch class for default functionality.
+        :param name: the name of the physical switch
+        """
         super(PhysicalSwitch, self).__init__(name)
+
+        # The following fields are used to tag each physical host so that the distance between two hosts can be
+        # calculated in O(1) time for any K fat tree topology
+        self.pod_number = 0
+        self.vertical_number = 0
+        self.height_number = 0
+
+    def set_p(self, num):
+        self.pod_number = num
+
+    def set_v(self, num):
+        self.vertical_number = num
+
+    def set_h(self, num):
+        self.height_number = num
+
+    def get_p(self):
+        return self.pod_number
+
+    def get_v(self):
+        return self.vertical_number
+
+    def get_h(self):
+        return self.height_number
 
 
 class VMPair:

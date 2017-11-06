@@ -153,6 +153,13 @@ class PhysicalMachine(Node, object):
         """
         return self.vms
 
+    def has_space(self):
+        """
+        Determines if a PhysicalHost has non-zero space.
+        :return: True if object has empty space, false otherwise
+        """
+        return self.current_capacity < self.capacity
+
 
 class PhysicalSwitch(Node, object):
     """

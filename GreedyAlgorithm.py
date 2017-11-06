@@ -12,13 +12,19 @@ class GreedyAlgorithm:
 
     Args:
         self.topology (GraphTopology): the topology this algorithm will use to replicate virtual machines
+        self.vm_pairs (VMPair): a list of VMPair objects inside the input topology
     """
-    def __init__(self, base_topo):
+    def __init__(self, base_topo, virtual_machine_pairs):
+        self.vm_pairs = virtual_machine_pairs
         self.topology = base_topo
-        pass
 
     def allocate(self):
-
+        """
+        Replicates VMs according to the algorithm outlined above
+        :return: None
+        """
+        vm_pairs = sorted(self.vm_pairs, key=lambda v: v.get_communication_frequency())
+        phy_hosts = filter()
         pass
 
     def get_cost(self):

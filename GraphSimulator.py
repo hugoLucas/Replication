@@ -16,7 +16,6 @@ class GraphSimulator:
         self.vm_comm_range = 1000
 
         self.allocated_vm_pairs = []
-        self.replicated_vm_pairs = []
 
     def set_up_data_center(self):
         """
@@ -47,7 +46,7 @@ class GraphSimulator:
         for the cloud data center
         """
         physical_hosts = self.topo.get_hosts()
-        free_indices = range(0, len(self.allocated_vm_pairs))
+        free_indices = range(0, len(physical_hosts))
         for pair in self.allocated_vm_pairs:
             vm_1, vm_2 = pair.get_vms()
 
@@ -62,9 +61,10 @@ class GraphSimulator:
     def revert_state(self):
         """
         Reverts the simulation topology to its pre-algorithm application state
-        :return:
+        :return: None
         """
-        return
+        map(lambda v: v.clear_replicated_machines(), self.topo.get_hosts())
+        map(lambda v: v.reset_pair(), self.allocated_vm_pairs)
 
     @staticmethod
     def get_random_host(free_indices, hosts, vm_size):

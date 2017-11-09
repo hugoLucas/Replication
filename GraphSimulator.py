@@ -12,7 +12,7 @@ class GraphSimulator:
         self.topo = topology
         self.n_vm_pairs = num_vm_pairs
 
-        self.vm_freq_range = 1000
+        self.vm_freq_range = 100
 
         self.allocated_vm_pairs = []
         self.base_communication_cost = 0
@@ -74,7 +74,10 @@ class GraphSimulator:
             host_2.add_vm(vm_2)
             vm_2.assign_parent(host_2)
 
-            hops = self.topo.get_distance(host_1.get_edge_switch(), host_2.get_edge_switch()) + 2
+            if vm_1.get_parent() == vm_2.get_parent():
+                hops = 0
+            else:
+                hops = self.topo.get_distance(host_1.get_edge_switch(), host_2.get_edge_switch()) + 2
             self.base_communication_cost += (hops * pair.get_communication_frequency())
 
     def revert_state(self):

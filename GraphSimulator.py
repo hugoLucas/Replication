@@ -34,6 +34,8 @@ class GraphSimulator:
         print "New Cost: {}".format(algorithm_cost)
         print "Reduction: {} \n\n".format(reduction)
 
+        return algorithm_cost
+
     def set_up_data_center(self):
         """
         Builds a set of random virtual machine pairs and allocates them in the data center
@@ -88,6 +90,13 @@ class GraphSimulator:
         """
         map(lambda v: v.clear_replicated_machines(), self.topo.get_hosts())
         map(lambda v: v.reset_pair(), self.allocated_vm_pairs)
+
+    def get_base_cost(self):
+        """
+        Returns the communication cost of the randomly allocated VM pairs.
+        :return: int
+        """
+        return self.base_communication_cost
 
     @staticmethod
     def get_random_host(free_indices, hosts, vm_size):

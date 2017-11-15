@@ -1,6 +1,7 @@
 import GreedyAlgorithm
 import GraphSimulator
 import GraphTopology
+import MemoryReduction
 import ClusterAlgorithm
 
 NUM_VM_PAIRS = 50
@@ -10,6 +11,12 @@ topo.create_topology()
 
 sim = GraphSimulator.GraphSimulator(topo, NUM_VM_PAIRS)
 sim.set_up_data_center()
-#sim.pass_algorithm(GreedyAlgorithm.GreedyAlgorithm)
+
+sim.pass_algorithm(GreedyAlgorithm.GreedyAlgorithm)
+sim.revert_state()
 
 sim.pass_algorithm(ClusterAlgorithm.ClusterAlgorithm)
+sim.revert_state()
+
+sim.pass_algorithm(MemoryReduction.MemoryReduction)
+sim.revert_state()

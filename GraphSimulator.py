@@ -29,9 +29,10 @@ class GraphSimulator:
         algorithm_cost = algorithm.get_cost() * 1.0
         reduction = (algorithm_cost - self.base_communication_cost)/self.base_communication_cost
 
+        print "####### {} #######".format(algorithm_class)
         print "Base Cost: {}".format(self.base_communication_cost)
         print "New Cost: {}".format(algorithm_cost)
-        print "Reduction: {}".format(reduction)
+        print "Reduction: {} \n\n".format(reduction)
 
     def set_up_data_center(self):
         """

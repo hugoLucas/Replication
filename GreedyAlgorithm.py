@@ -27,6 +27,10 @@ class GreedyAlgorithm:
         vm_pairs = sorted(self.vm_pairs, key=lambda v: v.get_communication_frequency(), reverse=True)
         phy_hosts = filter(lambda v: v.has_space(), self.topology.get_hosts())
         while len(phy_hosts) > 0:
+
+            if len(vm_pairs) == 0:
+                break
+
             pair = vm_pairs.pop(0)
             vm_1, vm_2 = pair.get_vms()
             if vm_1.get_parent() != vm_2.get_parent():

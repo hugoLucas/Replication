@@ -124,6 +124,8 @@ class ExhastiveSearch:
     def hop_cost(self, vm_1, vm_2, comm_frequency):
         parent_1, parent_2 = vm_1.get_parent(), vm_2.get_parent()
         if parent_1 != parent_2:
+            if parent_1.get_edge_switch() == parent_2.get_edge_switch():
+                return 2
             hop_cost = self.topology.get_distance(parent_1.get_edge_switch(), parent_2.get_edge_switch()) + 2
             return hop_cost * comm_frequency
         return 0

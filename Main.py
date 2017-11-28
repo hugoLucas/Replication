@@ -5,8 +5,6 @@ import GreedyAlgorithm
 import GraphSimulator
 import GraphTopology
 
-import matplotlib.patches as mpatches
-import matplotlib.ticker as mtick
 import matplotlib.pyplot as plt
 
 import time
@@ -16,8 +14,8 @@ import scipy.stats
 
 NUM_VM_PAIRS = 50
 MAX_VM_SIZE = 1
-NUM_SIMS = 100
-HOST_CAP = 8
+NUM_SIMS = 50
+HOST_CAP = 9
 K_VAL = 4
 
 
@@ -71,16 +69,21 @@ for i in range(0, NUM_SIMS):
 
     print "SIM {} done...".format(str(i + 1))
 
-print "GREEDY: {}".format(greedy_time)
-print "CLUSTER: {}".format(cluster_time)
-print "MEM REDUC: {}".format(mem_reduc_time)
-print "EXHAS: {}".format(exhas_time)
+print "GREEDY: {}s".format(greedy_time)
+print "CLUSTER: {}s".format(cluster_time)
+print "MEM REDUC: {}s".format(mem_reduc_time)
+print "EXHAS: {}s".format(exhas_time)
 
 base_mean, base_width = calc_mean_and_width(base_data)
 greedy_mean, greedy_width = calc_mean_and_width(greedy_data)
 cluster_mean, cluster_width = calc_mean_and_width(cluster_data)
 mem_reduc_mean, mem_reduc_width = calc_mean_and_width(mem_reduc_data)
 exhas_mean, exhas_width = calc_mean_and_width(exhas_data)
+
+print "GREEDY: {} cost".format(greedy_mean)
+print "CLUSTER: {} cost".format(cluster_mean)
+print "MEM REDUC: {} cost".format(mem_reduc_mean)
+print "EXHAS: {} cost".format(exhas_mean)
 
 plt.bar(1, base_mean, yerr=base_width, capsize=5, edgecolor="red", hatch="+", fill=False)
 plt.bar(2, greedy_mean, yerr=greedy_width, capsize=5, edgecolor="navy", hatch="/", fill=False)

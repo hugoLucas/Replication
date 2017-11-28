@@ -4,89 +4,64 @@ class ClusterAlgorithm:
         self.vm_pairs = virtual_machine_pairs
         self.topology = base_topo
 
-
-    """
-    Cluster Algorithm: replicate vms in a cluster, starting from highest frequency
-    1. attempt to place replication in same machine
-    2. attempt to place replication in pm under same edge switch
-    3. attempt to place replication in same pod
-    run algorithm for all communication pairs
-    """
     def allocate(self):
         vm_pairs = sorted(self.vm_pairs, key=lambda v: v.get_communication_frequency(), reverse=True)
         phy_hosts = filter(lambda v: v.has_space(), self.topology.get_hosts())
 
-        for pair in vm_pairs:
-            vm_1, vm_2 = pair.get_vms()
-            host_1, host_2 = vm_1.get_parent(), vm_2.get_parent()
-            comm_cost = self.topology.get_distance(host_1.get_edge_switch(), host_2.get_edge_switch())
-            vm_size = vm_1.get_size()
-            set_flag = 0
+        for v_p in vm_pairs:
+            v_1, v_2 = v_p.get_vms()
 
-            if vm_1.get_parent() == vm_2.get_parent():
-                set_flag = 1
-            elif set_flag == 0 and vm_1.get_parent() != vm_2.get_parent():
-                if host_1.can_fit(vm_size):
-                    replicated_vm = vm_2.replicate()
-                    host_1.replicate_vm(replicated_vm)
-                    replicated_vm.assign_parent(host_1)
-                    pair.add_replicated_vm(replicated_vm)
-                    set_flag = 1
-                elif host_2.can_fit(vm_size):
-                    replicated_vm = vm_1.replicate()
-                    host_2.replicate_vm(replicated_vm)
-                    replicated_vm.assign_parent(host_2)
-                    pair.add_replicated_vm(replicated_vm)
-                    set_flag = 1
-
-            if set_flag == 0 and host_1.get_edge_switch() != host_2.get_edge_switch():
-                #get physical machines under edge switch
-                # check pms space under same edge switch
-                # try to get in same pm under edge switch
-                for host in phy_hosts:
-                    if set_flag == 0:
-                        if host.get_edge_switch() == host_1.get_edge_switch():
-                            if host.can_fit(vm_size):
-                                replicated_vm = vm_2.replicate()
-                                host.replicate_vm(replicated_vm)
-                                replicated_vm.assign_parent(host)
-                                pair.add_replicated_vm(replicated_vm)
-                                set_flag = 1
-
-                        if set_flag == 0:
-                            if host.get_edge_switch() == host_2.get_edge_switch():
-                                if host.can_fit(vm_size):
-                                    replicated_vm = vm_1.replicate()
-                                    host.replicate_vm(replicated_vm)
-                                    replicated_vm.assign_parent(host)
-                                    pair.add_replicated_vm(replicated_vm)
-                                    set_flag = 1
+            new_host, vm = self.can_place_together(v_1, v_2)
+            if new_host is not None:
+                self.place_machine(new_host, vm, v_p)
             else:
-                set_flag = 1
+                new_host, vm = self.can_place_edge_switch(v_1, v_2, phy_hosts)
+                if new_host is not None:
+                    self.place_machine(new_host, vm, v_p)
+                else:
+                    new_host, vm = self.can_place_pod(v_1, v_2, phy_hosts)
+                    if new_host is not None:
+                        self.place_machine(new_host, vm, v_p)
 
-            if set_flag == 0 and host_1.get_edge_switch().get_p() != host_2.get_edge_switch().get_p():
-                for host in phy_hosts:
-                    if set_flag == 0:
-                        if host.get_edge_switch().get_p() == host_1.get_edge_switch().get_p():
-                            if host.can_fit(vm_size):
-                                replicated_vm = vm_2.replicate()
-                                host.replicate_vm(replicated_vm)
-                                replicated_vm.assign_parent(host)
-                                pair.add_replicated_vm(replicated_vm)
-                                set_flag = 1
+    @staticmethod
+    def place_machine(host, vm, pair):
+        replicated_vm = vm.replicate()
+        host.replicate_vm(replicated_vm)
+        replicated_vm.assign_parent(host)
+        pair.add_replicated_vm(replicated_vm)
 
-                        if set_flag == 0:
-                            if host.get_edge_switch().get_p() == host_2.get_edge_switch().get_p():
-                                if host.can_fit(vm_size):
-                                    replicated_vm = vm_1.replicate()
-                                    host.replicate_vm(replicated_vm)
-                                    replicated_vm.assign_parent(host)
-                                    pair.add_replicated_vm(replicated_vm)
-                                    set_flag = 1
+    @staticmethod
+    def return_results(h_1, h_2, v_1, v_2):
+        if len(h_1) > 0:
+            return h_1[0], v_2
+        if len(h_2) > 0:
+            return h_2[0], v_1
+        return None, None
 
-            elif set_flag == 0:
-                set_flag == 1
+    def can_place_pod(self, v_1, v_2, hosts):
+        p_1, p_2 = v_1.get_parent().get_edge_switch().get_p(), v_2.get_parent().get_edge_switch().get_p()
+        h_1, h_2 = filter(lambda v: p_1 == v.get_edge_switch().get_p(), hosts), \
+                   filter(lambda v: p_1 == v.get_edge_switch().get_p(), hosts)
+        h_1, h_2 = filter(lambda v: v.can_fit(v_2.get_size()), h_1), filter(lambda v: v.can_fit(v_1.get_size()), h_2)
+        return self.return_results(h_1, h_2, v_1, v_2)
 
+    def can_place_edge_switch(self, v_1, v_2, hosts):
+        e_1, e_2 = v_1.get_parent().get_edge_switch(), v_2.get_parent().get_edge_switch()
+        h_1, h_2 = filter(lambda v: v.get_edge_switch() == e_1, hosts), \
+                   filter(lambda v: v.get_edge_switch() == e_2, hosts)
+        h_1, h_2 = filter(lambda v: v.can_fit(v_2.get_size()), h_1), filter(lambda v: v.can_fit(v_1.get_size()), h_2)
+        return self.return_results(h_1, h_2, v_1, v_2)
+
+    @staticmethod
+    def can_place_together(v_1, v_2):
+        p_1, p_2 = v_1.get_parent(), v_2.get_parent()
+
+        if p_1.can_fit(v_2.get_size()):
+            return p_1, v_2
+        elif p_2.can_fit(v_1.get_size()):
+            return p_2, v_1
+        else:
+            return None, None
 
     def get_cost(self):
         """
@@ -95,7 +70,6 @@ class ClusterAlgorithm:
         """
         communication_cost = 0
         for pair in self.vm_pairs:
-            hop_cost = 0
             vm_1, vm_2 = pair.get_vms()
             comm_frequency = pair.get_communication_frequency()
             if pair.was_replicated():

@@ -12,7 +12,7 @@ import scipy as sp
 import scipy.stats
 
 MAX_VM_SIZE = 1
-NUM_SIMS = 5
+NUM_SIMS = 1
 K_VAL = 8
 
 
@@ -111,8 +111,8 @@ def plot_subset(mean_vector, width_vector, offset, bar_color, bar_hatch):
     """
     current_offset = offset
     for mean_val, width_val in zip(mean_vector, width_vector):
-        plt.bar(current_offset, mean_val, yern=width_val, capsize=5, edgecolor=bar_color, hatch=bar_hatch, fill=False)
-        offset += 6
+        plt.bar(current_offset, mean_val, yerr=width_val, capsize=5, edgecolor=bar_color, hatch=bar_hatch, fill=False)
+        current_offset += 6
 
 
 def capacity_calc(factor, pairs):
@@ -168,8 +168,8 @@ def graph_simulation(factor):
     plt.yticks(fontsize=20)
     plt.gca().set_yticks(plt.gca().get_yticks()[::2])
     plt.ylabel("Number of VM Pairs", fontsize=30)
-    plt.xlabel("Average Communication Cost", fontsize=35)
+    plt.xlabel("Average Communication Cost ({})".format(factor), fontsize=35)
     plt.show()
 
-
-graph_simulation(0.50)
+factor = 0.25
+graph_simulation(factor)
